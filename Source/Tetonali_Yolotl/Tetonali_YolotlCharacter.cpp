@@ -3,13 +3,13 @@
 #include "Tetonali_YolotlCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
-#include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
+#include "Perception/AISense_Sight.h"
 
 ATetonali_YolotlCharacter::ATetonali_YolotlCharacter()
 {
@@ -50,8 +50,6 @@ ATetonali_YolotlCharacter::ATetonali_YolotlCharacter()
 void ATetonali_YolotlCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// stub
 }
 
 void ATetonali_YolotlCharacter::Tick(float DeltaSeconds)

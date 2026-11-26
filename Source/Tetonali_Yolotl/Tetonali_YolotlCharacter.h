@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GenericTeamAgentInterface.h"
 #include "GameFramework/Character.h"
 #include "Tetonali_YolotlCharacter.generated.h"
 
@@ -13,7 +14,7 @@ class USpringArmComponent;
  *  A controllable top-down perspective character
  */
 UCLASS(abstract)
-class ATetonali_YolotlCharacter : public ACharacter
+class TETONALI_YOLOTL_API ATetonali_YolotlCharacter : public ACharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -43,6 +44,5 @@ public:
 
 	/** Returns the Camera Boom component **/
 	USpringArmComponent* GetCameraBoom() const { return CameraBoom.Get(); }
-
 };
 
