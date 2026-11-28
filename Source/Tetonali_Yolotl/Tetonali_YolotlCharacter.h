@@ -7,9 +7,6 @@
 #include "GameFramework/Character.h"
 #include "Tetonali_YolotlCharacter.generated.h"
 
-class UCameraComponent;
-class USpringArmComponent;
-
 /**
  *  A controllable top-down perspective character
  */
@@ -19,14 +16,9 @@ class TETONALI_YOLOTL_API ATetonali_YolotlCharacter : public ACharacter, public 
 	GENERATED_BODY()
 
 private:
-
-	/** Top down camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UCameraComponent> TopDownCameraComponent;
-
-	/** Camera boom positioning the camera above the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<USpringArmComponent> CameraBoom;
+	//ID for the Team Affiliation
+	UPROPERTY(EditDefaultsOnly, Category = "AI|Team")
+	uint8 TeamID = 0;
 
 public:
 
@@ -38,11 +30,11 @@ public:
 
 	/** Update */
 	virtual void Tick(float DeltaSeconds) override;
-
-	/** Returns the camera component **/
-	UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent.Get(); }
-
-	/** Returns the Camera Boom component **/
-	USpringArmComponent* GetCameraBoom() const { return CameraBoom.Get(); }
+	
+	//Setter for the ID on Team Affiliation
+	virtual void SetGenericTeamId(const FGenericTeamId& NewTeamID) override;
+	
+	//Getter for the ID on Team Affiliation
+	virtual FGenericTeamId GetGenericTeamId() const override;
 };
 

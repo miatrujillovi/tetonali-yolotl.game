@@ -21,9 +21,9 @@ ACustomAIController::ACustomAIController()
 	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>("SightConfig");
 
 	// Que tan lejos ve, a que distancia lo pierde y el angulo del cono de vision.
-	SightConfig->SightRadius = 1500.0f;
-	SightConfig->LoseSightRadius = 2000.0f;
-	SightConfig->PeripheralVisionAngleDegrees = 60.0f;
+	SightConfig->SightRadius = 2000.0f;
+	SightConfig->LoseSightRadius = 2500.0f;
+	SightConfig->PeripheralVisionAngleDegrees = 180.0f;
 
 	// Detecta a cualquier actor, sin importar su equipo.
 	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
@@ -47,31 +47,34 @@ FGenericTeamId ACustomAIController::GetGenericTeamId() const
 
 ETeamAttitude::Type ACustomAIController::GetTeamAttitudeTowards(const AActor& Other) const
 {
-	const ATetonali_YolotlCharacter* OtherCharacter = Cast<ATetonali_YolotlCharacter>(&Other);
-	if (!OtherCharacter)
+	//1. We get the ID of the current AIController and returns a Neutral Attitude if the ID represents "NoTeam"
+	const FGenericTeamId MyTeamId = GetGenericTeamId(); 
+	if (MyTeamId == FGenericTeamId::NoTeam)
 	{
 		return ETeamAttitude::Neutral;
 	}
-
-	const FGenericTeamId MyTeamId = GetGenericTeamId();
-	const FGenericTeamId OtherTeamId = FGenericTeamId::GetTeamIdentifier(&Other);
-
+	
+	//2. Checks the ID of the detected actor, if not team is found, checks the TeamID of its controller
+	FGenericTeamId OtherTeamId = FGenericTeamId::GetTeamIdentifier(&Other);
+	if (OtherTeamId == FGenericTeamId::NoTeam)
+	{
+		if (const APawn* OtherPawn = Cast<APawn>(&Other))
+		{
+			if (const AController* OtherController = OtherPawn->GetController())
+			{
+				OtherTeamId = FGenericTeamId::GetTeamIdentifier(OtherController);
+			}
+		}
+	}
+	
+	//3. If the detected actor ID is equal to "NoTeam" set to neutral attitude
 	if (OtherTeamId == FGenericTeamId::NoTeam)
 	{
 		return ETeamAttitude::Neutral;
 	}
-
+	
+	//4. If the IDs are the same return Friendly attitude, otherwise, Hostile attitude.
 	return (MyTeamId == OtherTeamId) ? ETeamAttitude::Friendly : ETeamAttitude::Hostile;
-}
-
-TArray<FNearbyAgentData> ACustomAIController::GetNearbyAllies() const
-{
-	return NearbyAllies;
-}
-
-TArray<FNearbyAgentData> ACustomAIController::GetNearbyEnemies() const
-{
-	return NearbyEnemies;
 }
 
 int32 ACustomAIController::GetNearbyAllyCount() const
@@ -97,13 +100,17 @@ void ACustomAIController::BeginPlay()
 
 void ACustomAIController::HandleTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
+	//1. If the actor is the actor itself, return
 	if (!Actor || Actor == this)
 	{
 		return;
 	}
 	
+	//2. If a Actor was successfully sensed, call to Update the Nearby Agent List
 	const bool bSensed = Stimulus.WasSuccessfullySensed();
 	UpdateNearbyAgentList(Actor, bSensed);
+	
+	//3. Get the Attitude of the other Actor, if Hostile, get the Actor has the TargetActor
 	const ETeamAttitude::Type Attitude = GetTeamAttitudeTowards(*Actor);
 	if (Attitude == ETeamAttitude::Hostile)
 	{
@@ -119,24 +126,25 @@ void ACustomAIController::HandleTargetPerceptionUpdated(AActor* Actor, FAIStimul
 		}
 	}
 	
-	// Solo nos interesa el jugador; cualquier otro actor se ignora.
-	/*const APawn* PerceivedPawn = Cast<APawn>(Actor);
-	if (!PerceivedPawn || !PerceivedPawn->IsPlayerControlled())
-	{
-		return;
-	}
+	const FGenericTeamId MyId = GetGenericTeamId();
+	const FGenericTeamId OtherId = FGenericTeamId::GetTeamIdentifier(Actor);
 
-	if (Stimulus.WasSuccessfullySensed())
+	//Debugging
+	/*const FString Msg = FString::Printf(
+		TEXT("[%s] Sensed %s (MyTeam=%d, OtherTeam=%d, Att=%d) | Allies: %d | Enemies: %d"),
+		*GetName(),
+		*Actor->GetName(),
+		MyId.GetId(),
+		OtherId.GetId(),
+		static_cast<int32>(Attitude),
+		NearbyAllies.Num(),
+		NearbyEnemies.Num()
+	);
+
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *Msg);
+	if (GEngine)
 	{
-		// Lo ve: cancela cualquier "perdida" pendiente, guarda el objetivo y marca que lo tiene.
-		GetWorldTimerManager().ClearTimer(LoseSightTimer);
-		TargetActor = Actor;
-		bHasTarget = true;
-	}
-	else if (bHasTarget && !GetWorldTimerManager().IsTimerActive(LoseSightTimer))
-	{
-		// Lo dejo de ver: espera LoseSightGraceTime antes de darlo por perdido,
-		GetWorldTimerManager().SetTimer(LoseSightTimer, this, &ACustomAIController::ClearPlayerSight, LoseSightGraceTime, false);
+		GEngine->AddOnScreenDebugMessage(-1, 2.5f, bSensed ? FColor::Green : FColor::Red, Msg);
 	}*/
 }
 

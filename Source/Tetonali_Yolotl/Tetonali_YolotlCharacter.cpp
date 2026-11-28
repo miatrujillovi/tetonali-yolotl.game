@@ -27,21 +27,6 @@ ATetonali_YolotlCharacter::ATetonali_YolotlCharacter()
 	GetCharacterMovement()->bConstrainToPlane = true;
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
 
-	// Create the camera boom component
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-
-	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->SetUsingAbsoluteRotation(true);
-	CameraBoom->TargetArmLength = 800.f;
-	CameraBoom->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
-	CameraBoom->bDoCollisionTest = false;
-
-	// Create the camera component
-	TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
-
-	TopDownCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	TopDownCameraComponent->bUsePawnControlRotation = false;
-
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
@@ -55,6 +40,14 @@ void ATetonali_YolotlCharacter::BeginPlay()
 void ATetonali_YolotlCharacter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+}
 
-	// stub
+void ATetonali_YolotlCharacter::SetGenericTeamId(const FGenericTeamId& NewTeamID)
+{
+	TeamID = NewTeamID.GetId();
+}
+
+FGenericTeamId ATetonali_YolotlCharacter::GetGenericTeamId() const
+{
+	return FGenericTeamId(TeamID);
 }

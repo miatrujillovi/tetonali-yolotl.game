@@ -60,13 +60,11 @@ public:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "AI|Perception")
 	TArray<FNearbyAgentData> NearbyEnemies;
-	
-	TArray<FNearbyAgentData> GetNearbyAllies() const;
-	
-	TArray<FNearbyAgentData> GetNearbyEnemies() const;
 
+	UFUNCTION(BlueprintCallable, Category = "AI|Perception")
 	int32 GetNearbyAllyCount() const;
 
+	UFUNCTION(BlueprintCallable, Category = "AI|Perception")
 	int32 GetNearbyEnemyCount() const;
 	
 protected:
